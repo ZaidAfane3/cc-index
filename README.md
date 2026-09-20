@@ -53,17 +53,33 @@ cc-index wide
 
 ## Shell completion
 
-Tab-completion for the `pick`/`list`/`wide`/`completion`/`help` commands (and `pick`'s `--wide` flag) is available for both bash and zsh. This is generated on demand rather than shipped as files you need to keep in sync — new commands automatically show up in completion.
+Tab-completion for the `pick`/`list`/`wide`/`completion`/`help` commands (and `pick`'s `--wide` flag) is available for both bash and zsh. This is generated on demand by `cc-index completion <shell>` rather than shipped as static files you need to keep in sync — new commands automatically show up in completion. This is the same pattern used by `kubectl`, `gh`, `docker`, etc.
+
+### zsh
+
+Add this line to `~/.zshrc`:
 
 ```bash
-# bash - add to ~/.bashrc
-eval "$(cc-index completion bash)"
-
-# zsh - add to ~/.zshrc
 eval "$(cc-index completion zsh)"
 ```
 
-Reload your shell (or `source ~/.bashrc` / `source ~/.zshrc`) after adding the line.
+### bash
+
+Add this line to `~/.bashrc`:
+
+```bash
+eval "$(cc-index completion bash)"
+```
+
+### Apply it
+
+Reload your shell, or source the file directly:
+
+```bash
+source ~/.zshrc   # or: source ~/.bashrc
+```
+
+Then `cc-index <TAB>` should list the available commands.
 
 ## Configuration
 
