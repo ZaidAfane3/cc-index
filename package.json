@@ -1,0 +1,10 @@
+{
+  "name": "cc-index",
+  "version": "1.0.0",
+  "description": "Arrow-key picker for Claude Code sessions - resumes the right session in the right directory",
+  "type": "module",
+  "bin": {
+    "cc-index": "bin/cc-index.js"
+  },
+  "license": "MIT"
+}
