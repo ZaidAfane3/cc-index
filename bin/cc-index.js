@@ -171,7 +171,97 @@ function pickWithFzf(sessions, wide) {
   return sessions.find((s) => s.id === selectedId) || null;
 }
 
-async function main() {
+const SUBCOMMANDS = ["pick", "list", "wide", "completion", "help"];
+
+const BASH_COMPLETION = `_cc_index_completion() {
+  local cur=\${COMP_WORDS[COMP_CWORD]}
+
+  if [[ \${COMP_CWORD} -eq 1 ]]; then
+    COMPREPLY=($(compgen -W "${SUBCOMMANDS.join(" ")}" -- "$cur"))
+    return
+  fi
+
+  case "\${COMP_WORDS[1]}" in
+    pick)
+      COMPREPLY=($(compgen -W "--wide" -- "$cur"))
+      ;;
+    completion)
+      COMPREPLY=($(compgen -W "bash zsh" -- "$cur"))
+      ;;
+  esac
+}
+complete -F _cc_index_completion cc-index
+`;
+
+const ZSH_COMPLETION = `#compdef cc-index
+
+_cc_index() {
+  local -a subcommands
+  subcommands=(
+    'pick:launch the interactive picker (default)'
+    'list:print recent sessions and exit, no fzf'
+    'wide:print recent sessions with extra columns, no fzf'
+    'completion:print a shell completion script'
+    'help:show usage'
+  )
+
+  _arguments -C \\
+    '1: :->command' \\
+    '*::options:->args'
+
+  case $state in
+    command)
+      _describe 'command' subcommands
+      ;;
+    args)
+      case $words[1] in
+        pick)
+          _arguments '--wide[show extra columns: age, created date, id, entrypoint, cwd]'
+          ;;
+        completion)
+          _values 'shell' bash zsh
+          ;;
+      esac
+      ;;
+  esac
+}
+
+_cc_index "$@"
+`;
+
+function printCompletion(shell) {
+  if (shell === "bash") {
+    process.stdout.write(BASH_COMPLETION);
+  } else if (shell === "zsh") {
+    process.stdout.write(ZSH_COMPLETION);
+  } else {
+    console.error(`Unsupported shell: ${shell}. Use "bash" or "zsh".`);
+    process.exit(1);
+  }
+}
+
+function printUsage() {
+  console.log(`Usage: cc-index <command>
+
+Commands:
+  pick [--wide]      Launch the interactive fzf picker and resume the chosen session.
+  list               Print the 20 most recent sessions and exit (no fzf).
+  wide               Same as list, with extra columns: age, created date, id, entrypoint, cwd.
+  completion <shell> Print a shell completion script (bash or zsh).
+  help               Show this usage.
+
+Running "cc-index" with no command shows this help.
+
+Enable tab completion:
+  # bash (add to ~/.bashrc)
+  eval "$(cc-index completion bash)"
+
+  # zsh (add to ~/.zshrc)
+  eval "$(cc-index completion zsh)"
+`);
+}
+
+async function runList(wide) {
   const sessions = await collectSessions();
 
   if (sessions.length === 0) {
@@ -179,13 +269,17 @@ async function main() {
     process.exit(1);
   }
 
-  const wide = process.argv.includes("--wide");
+  for (const s of sessions.slice(0, 20)) {
+    console.log(formatLine(s, wide));
+  }
+}
 
-  if (process.argv.includes("--list")) {
-    for (const s of sessions.slice(0, 20)) {
-      console.log(formatLine(s, wide));
-    }
-    process.exit(0);
+async function runPick(wide) {
+  const sessions = await collectSessions();
+
+  if (sessions.length === 0) {
+    console.error("No Claude Code sessions found under " + PROJECTS_DIR);
+    process.exit(1);
   }
 
   const hasFzf = spawnSync("which", ["fzf"], { stdio: "ignore" }).status === 0;
@@ -218,6 +312,35 @@ async function main() {
   });
 
   child.on("exit", (code) => process.exit(code ?? 0));
+}
+
+async function main() {
+  const command = process.argv[2];
+
+  switch (command) {
+    case undefined:
+    case "help":
+    case "--help":
+    case "-h":
+      printUsage();
+      return;
+    case "completion":
+      printCompletion(process.argv[3]);
+      return;
+    case "list":
+      await runList(process.argv.includes("--wide"));
+      return;
+    case "wide":
+      await runList(true);
+      return;
+    case "pick":
+      await runPick(process.argv.includes("--wide"));
+      return;
+    default:
+      console.error(`Unknown command: ${command}\n`);
+      printUsage();
+      process.exit(1);
+  }
 }
 
 main();

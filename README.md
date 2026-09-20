@@ -18,22 +18,29 @@ brew install fzf
 
 ## Usage
 
+`cc-index` follows a kubectl-style command structure: running it bare prints help, and every action is an explicit subcommand.
+
 ```bash
-cc-index
+cc-index pick
 ```
 
 Arrow keys (or fuzzy-type) to filter, `enter` to resume, `esc` to cancel. Sessions are sorted by the time of their last real message (not just file activity), most recent first.
 
-### Flags
+### Commands
 
-| Flag      | Description                                                          |
-|-----------|-----------------------------------------------------------------------|
-| `--list`  | Print the 20 most recent sessions and exit (no `fzf` required).       |
-| `--wide`  | Show extra columns: age, created-on date, session id, entrypoint, cwd. |
+| Command               | Description                                                            |
+|------------------------|------------------------------------------------------------------------|
+| `pick [--wide]`         | Launch the interactive fzf picker and resume the chosen session.       |
+| `list`                  | Print the 20 most recent sessions and exit (no `fzf` required).        |
+| `wide`                  | Same as `list`, with extra columns: age, created-on date, id, entrypoint, cwd. |
+| `completion <shell>`    | Print a shell completion script (`bash` or `zsh`).                     |
+| `help`                  | Show usage. Also shown when running `cc-index` with no command.        |
 
 ```bash
-cc-index --list
-cc-index --list --wide
+cc-index pick
+cc-index pick --wide
+cc-index list
+cc-index wide
 ```
 
 ## How it works
@@ -44,12 +51,26 @@ cc-index --list --wide
 4. Hands the list to `fzf` for picking.
 5. Runs `claude --resume <sessionId>` from the session's original `cwd`.
 
+## Shell completion
+
+Tab-completion for the `pick`/`list`/`wide`/`completion`/`help` commands (and `pick`'s `--wide` flag) is available for both bash and zsh. This is generated on demand rather than shipped as files you need to keep in sync — new commands automatically show up in completion.
+
+```bash
+# bash - add to ~/.bashrc
+eval "$(cc-index completion bash)"
+
+# zsh - add to ~/.zshrc
+eval "$(cc-index completion zsh)"
+```
+
+Reload your shell (or `source ~/.bashrc` / `source ~/.zshrc`) after adding the line.
+
 ## Configuration
 
 By default, `cc-index` looks for sessions under `~/.claude`. If your Claude Code data lives elsewhere, point it at that directory instead:
 
 ```bash
-CLAUDE_HOME=/path/to/custom/claude/home cc-index
+CLAUDE_HOME=/path/to/custom/claude/home cc-index pick
 ```
 
 ## License
