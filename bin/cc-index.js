@@ -226,7 +226,7 @@ _cc_index() {
   esac
 }
 
-_cc_index "$@"
+compdef _cc_index cc-index
 `;
 
 function printCompletion(shell) {
