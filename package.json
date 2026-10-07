@@ -6,5 +6,15 @@
   "bin": {
     "cc-index": "bin/cc-index.js"
   },
-  "license": "MIT"
+  "engines": {
+    "node": ">=16"
+  },
+  "license": "MIT",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "cli",
+    "fzf",
+    "sessions"
+  ]
 }

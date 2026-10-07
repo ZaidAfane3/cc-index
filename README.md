@@ -1,19 +1,29 @@
 # cc-index
 
-Arrow-key picker for [Claude Code](https://claude.com/claude-code) sessions — resumes the right session in the right directory.
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+Arrow-key picker for [Claude Code](https://claude.com/claude-code) sessions — resume the right session in the right directory, from anywhere.
 
 Claude Code stores every session as a JSONL transcript under `~/.claude/projects/`, but there's no built-in way to browse and jump back into an old one from wherever you happen to be. `cc-index` scans all of them, lets you fuzzy-pick one, and resumes it from its original working directory — so you don't have to remember which folder a session belongs to.
 
-## Install
+## Features
+
+- Fuzzy, arrow-key session picker powered by [fzf](https://github.com/junegunn/fzf)
+- Resumes a session in its original working directory, not wherever you happen to be
+- Sorts by the time of the last real message, ignoring file-touch noise from opening/closing a session
+- kubectl-style subcommands with bash and zsh tab completion
+- Supports non-default Claude Code data locations via `CLAUDE_HOME`
+
+## Requirements
+
+- Node.js >= 16
+- [fzf](https://github.com/junegunn/fzf) — `brew install fzf`
+- The `claude` CLI on your `PATH`
+
+## Installation
 
 ```bash
 npm install -g cc-index
-```
-
-Requires [fzf](https://github.com/junegunn/fzf) for the interactive picker:
-
-```bash
-brew install fzf
 ```
 
 ## Usage
@@ -24,7 +34,7 @@ brew install fzf
 cc-index pick
 ```
 
-Arrow keys (or fuzzy-type) to filter, `enter` to resume, `esc` to cancel. Sessions are sorted by the time of their last real message (not just file activity), most recent first.
+Arrow keys (or fuzzy-type) to filter, `enter` to resume, `esc` to cancel.
 
 ### Commands
 
@@ -53,7 +63,7 @@ cc-index wide
 
 ## Shell completion
 
-Tab-completion for the `pick`/`list`/`wide`/`completion`/`help` commands (and `pick`'s `--wide` flag) is available for both bash and zsh. This is generated on demand by `cc-index completion <shell>` rather than shipped as static files you need to keep in sync — new commands automatically show up in completion. This is the same pattern used by `kubectl`, `gh`, `docker`, etc.
+Tab-completion for the `pick`/`list`/`wide`/`completion`/`help` commands (and `pick`'s `--wide` flag) is available for both bash and zsh. It's generated on demand by `cc-index completion <shell>` rather than shipped as static files you need to keep in sync — new commands automatically show up in completion. This is the same pattern used by `kubectl`, `gh`, `docker`, etc.
 
 ### zsh
 
@@ -89,6 +99,10 @@ By default, `cc-index` looks for sessions under `~/.claude`. If your Claude Code
 CLAUDE_HOME=/path/to/custom/claude/home cc-index pick
 ```
 
+## Contributing
+
+Issues and pull requests are welcome. For anything non-trivial, please open an issue first to discuss what you'd like to change.
+
 ## License
 
-MIT
+[MIT](LICENSE)
