@@ -10,6 +10,14 @@
     "node": ">=16"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZaidAfane3/cc-index.git"
+  },
+  "homepage": "https://github.com/ZaidAfane3/cc-index#readme",
+  "bugs": {
+    "url": "https://github.com/ZaidAfane3/cc-index/issues"
+  },
   "keywords": [
     "claude",
     "claude-code",
