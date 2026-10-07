@@ -6,6 +6,9 @@
   "bin": {
     "cc-index": "bin/cc-index.js"
   },
+  "scripts": {
+    "test": "node --test test/"
+  },
   "engines": {
     "node": ">=16"
   },

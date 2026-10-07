@@ -1,5 +1,6 @@
 # cc-index
 
+[![CI](https://github.com/ZaidAfane3/cc-index/actions/workflows/ci.yml/badge.svg)](https://github.com/ZaidAfane3/cc-index/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Arrow-key picker for [Claude Code](https://claude.com/claude-code) sessions — resume the right session in the right directory, from anywhere.
@@ -98,6 +99,14 @@ By default, `cc-index` looks for sessions under `~/.claude`. If your Claude Code
 ```bash
 CLAUDE_HOME=/path/to/custom/claude/home cc-index pick
 ```
+
+## Development
+
+```bash
+npm test
+```
+
+Runs the test suite (`node --test`), covering the pure formatting helpers and the CLI's command dispatch, including a syntax check of the generated shell completion scripts. CI runs this on every push/PR across Node 18, 20, and 22.
 
 ## Contributing
 

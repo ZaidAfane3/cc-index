@@ -8,28 +8,12 @@ import path from "node:path";
 import os from "node:os";
 import readline from "node:readline";
 import { spawn, spawnSync } from "node:child_process";
+import { truncate, formatLine } from "../lib/format.js";
+import { printCompletion } from "../lib/completion.js";
 
 const CLAUDE_HOME = process.env.CLAUDE_HOME || path.join(os.homedir(), ".claude");
 const PROJECTS_DIR = path.join(CLAUDE_HOME, "projects");
 const FIELD_SEP = "\x1f";
-
-function humanAge(mtimeMs) {
-  const diffSec = Math.max(0, (Date.now() - mtimeMs) / 1000);
-  const units = [
-    ["d", 86400],
-    ["h", 3600],
-    ["m", 60],
-  ];
-  for (const [label, secs] of units) {
-    if (diffSec >= secs) return `${Math.floor(diffSec / secs)}${label} ago`;
-  }
-  return "just now";
-}
-
-function truncate(str, max) {
-  const clean = str.replace(/\s+/g, " ").trim();
-  return clean.length > max ? clean.slice(0, max - 1) + "…" : clean;
-}
 
 async function extractSessionInfo(filePath) {
   let title = null;
@@ -133,17 +117,6 @@ async function collectSessions() {
   return sessions;
 }
 
-function formatDate(ms) {
-  return new Date(ms).toISOString().slice(0, 10);
-}
-
-function formatLine(s, wide) {
-  if (wide) {
-    return `${humanAge(s.lastMessageMs).padEnd(9)} ${formatDate(s.birthtimeMs).padEnd(11)} ${s.id.slice(0, 8)}  ${truncate(s.name, 45).padEnd(46)} ${s.entrypoint.padEnd(14)} ${s.cwd || "(unknown dir)"}`;
-  }
-  return `${humanAge(s.lastMessageMs).padEnd(9)} ${s.id}  ${s.name}`;
-}
-
 function pickWithFzf(sessions, wide) {
   const lines = sessions.map((s) => `${formatLine(s, wide)}${FIELD_SEP}${s.id}`);
 
@@ -169,75 +142,6 @@ function pickWithFzf(sessions, wide) {
   if (result.status !== 0 || !result.stdout) return null;
   const selectedId = result.stdout.trim().split(FIELD_SEP)[1];
   return sessions.find((s) => s.id === selectedId) || null;
-}
-
-const SUBCOMMANDS = ["pick", "list", "wide", "completion", "help"];
-
-const BASH_COMPLETION = `_cc_index_completion() {
-  local cur=\${COMP_WORDS[COMP_CWORD]}
-
-  if [[ \${COMP_CWORD} -eq 1 ]]; then
-    COMPREPLY=($(compgen -W "${SUBCOMMANDS.join(" ")}" -- "$cur"))
-    return
-  fi
-
-  case "\${COMP_WORDS[1]}" in
-    pick)
-      COMPREPLY=($(compgen -W "--wide" -- "$cur"))
-      ;;
-    completion)
-      COMPREPLY=($(compgen -W "bash zsh" -- "$cur"))
-      ;;
-  esac
-}
-complete -F _cc_index_completion cc-index
-`;
-
-const ZSH_COMPLETION = `#compdef cc-index
-
-_cc_index() {
-  local -a subcommands
-  subcommands=(
-    'pick:launch the interactive picker (default)'
-    'list:print recent sessions and exit, no fzf'
-    'wide:print recent sessions with extra columns, no fzf'
-    'completion:print a shell completion script'
-    'help:show usage'
-  )
-
-  _arguments -C \\
-    '1: :->command' \\
-    '*::options:->args'
-
-  case $state in
-    command)
-      _describe 'command' subcommands
-      ;;
-    args)
-      case $words[1] in
-        pick)
-          _arguments '--wide[show extra columns: age, created date, id, entrypoint, cwd]'
-          ;;
-        completion)
-          _values 'shell' bash zsh
-          ;;
-      esac
-      ;;
-  esac
-}
-
-compdef _cc_index cc-index
-`;
-
-function printCompletion(shell) {
-  if (shell === "bash") {
-    process.stdout.write(BASH_COMPLETION);
-  } else if (shell === "zsh") {
-    process.stdout.write(ZSH_COMPLETION);
-  } else {
-    console.error(`Unsupported shell: ${shell}. Use "bash" or "zsh".`);
-    process.exit(1);
-  }
 }
 
 function printUsage() {
