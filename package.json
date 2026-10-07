@@ -6,6 +6,10 @@
   "bin": {
     "cc-index": "bin/cc-index.js"
   },
+  "files": [
+    "bin",
+    "lib"
+  ],
   "scripts": {
     "test": "node --test"
   },
